@@ -24,8 +24,10 @@ export class Module {
     active = true;
 
     tickerId;
-    /** @type {import("./preProcessor").PreProcessor[]} */
+    /** @type {import("./preProcessor.d.ts").PreProcessor[]} */
     preProcessors = [];
+    /** @type {import("./preProcessor.d.ts").PreProcessor[]} */
+    static globalPreProcessors = [];
 
     static defaultOptions = {
         name: "",
@@ -35,7 +37,8 @@ export class Module {
         author: "",
         dependencies: [],
         active: true,
-        tickRate: 1
+        tickRate: 20,
+        ignoreGlobalProcessors: false,
     }
 
     constructor(options = Module.defaultOptions) {
@@ -96,9 +99,14 @@ export class Module {
     onDisable() { }
     onTick() { }
 
-    /** @param {import("./preProcessor").PreProcessor} preProcessor */
+    /** @param {import("./preProcessor.d.ts").PreProcessor} preProcessor */
     use(preProcessor) {
         this.preProcessors.push(preProcessor)
+    }
+
+    /** @param {import("./preProcessor.d.ts").PreProcessor} preProcessor */
+    static useGlobal(preProcessor) {
+        this.globalPreProcessors.push(preProcessor)
     }
 
     static getAllPrototypeInstances(object, prototype = undefined) {
@@ -116,11 +124,17 @@ export class Module {
         }
 
         return instances;
+    }   
+    
+    /** @private */
+    get effectiveProcessors() {
+        if (this.ignoreGlobalProcessors)
+            return this.preProcessors;
+        return Module.globalPreProcessors.concat(this.preProcessors)
     }
-
     /** @private */
     preProcess(event, data) {
-        for (const preProcessorTable of this.preProcessors) {
+        for (const preProcessorTable of this.effectiveProcessors) {
             let tempData, tempFn;
 
             {
@@ -132,7 +146,7 @@ export class Module {
                     data = tempData;
             }
 
-             {
+            {
                 const allInstances = Module.getAllPrototypeInstances(data)
                 const keys = Object.keys(preProcessorTable)
                 keys.forEach(key => {
