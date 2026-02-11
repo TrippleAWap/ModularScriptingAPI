@@ -1,6 +1,7 @@
 import { WorldAfterEvents, WorldBeforeEvents, system, world } from "@minecraft/server";
 
 import EventEmitter from "./eventemitter3/index";
+import { setupMemberCallEmitter } from "./internal.js"
 
 export class Module {
     static modules = [];
@@ -51,7 +52,6 @@ export class Module {
             this[key] = options[key];
         }
 
-        console.log(JSON.stringify(this))
         this.setupInternals();
 
         this.setState?.(this.active)
@@ -251,26 +251,6 @@ export class Module {
     }
 }
 
-const setupMethodInternals = () => {
-    const ignoredMethods = [
-        "wrap",
-        "log",
-        "debug",
-        "constructor"
-    ];
-
-    const callables = Object.getOwnPropertyNames(Module.prototype).filter(i => !ignoredMethods.includes(i))
-    callables.forEach(key => {
-        if (typeof Module.prototype[key] != "function") return;
-        if (key.startsWith("_")) return;
-        const orig = Module.prototype[key];
-        Module.prototype[key] = function (...args) {
-            this?.emitter?.emit?.('call_' + key, ...args);
-            return orig.call(this, ...args)
-        }
-    })
-}
-
-setupMethodInternals();
+setupMemberCallEmitter(Module)
 
 globalThis.Module = Module;
