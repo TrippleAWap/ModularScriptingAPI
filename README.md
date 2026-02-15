@@ -46,6 +46,7 @@ class ChatModule extends Module {
 // WARNING: This may be dangerous and cause conflicts if used incorrectly.
 // It is recommended to use this sparingly and only for systems that require it.
 Module.useGlobal({
+    // This mutates all Player instances in all events.
     /** @param {Player} player */
     [Player]: (player) => {
         for (const tag of player.getTags()) {
