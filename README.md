@@ -20,8 +20,8 @@ class ChatModule extends Module {
         })
 
         this.use({
-            // Create preprocessor to clean the message and remove all 
-            // non-alphanumeric characters from the message. 
+            // Create preprocessor to clean the message and remove all non-alphanumeric 
+            // characters from the message. 
             "chatSend": (data) => {
                 data.message = data.message.replace(/[^a-zA-Z0-9]/g, "").trim();
             },
@@ -44,7 +44,7 @@ class ChatModule extends Module {
 
 // useGlobal ensures this preproccesor is used on all modules.
 // WARNING: This may be dangerous and cause conflicts if used incorrectly.
-// It is recommended to use this sparingly and only for modules that require it.
+// It is recommended to use this sparingly and only for systems that require it.
 Module.useGlobal({
     /** @param {Player} player */
     [Player]: (player) => {
